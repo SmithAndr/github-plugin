@@ -3,5 +3,14 @@
         <f:entry title="${%Result on failure}" field="resultOnFailure">
             <f:select/>
         </f:entry>
+        <f:entry title="${%Success URL Suffix}" field="successUrlSuffix">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%Unstable URL Suffix}" field="unstableUrlSuffix">
+            <f:textbox />
+        </f:entry>
+        <f:entry title="${%Failure URL Suffix}" field="failureUrlSuffix">
+            <f:textbox />
+        </f:entry>
     </f:advanced>
 </j:jelly>

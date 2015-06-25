@@ -43,11 +43,17 @@ import org.jenkinsci.plugins.github.util.BuildDataHelper;
 public class GitHubCommitNotifier extends Notifier {
 
     private final String resultOnFailure;
+    private final String successUrlSuffix;
+    private final String unstableUrlSuffix;
+    private final String failureUrlSuffix;
     private static final Result[] SUPPORTED_RESULTS = {FAILURE, UNSTABLE, SUCCESS};
     
     @DataBoundConstructor
-    public GitHubCommitNotifier(String resultOnFailure) {
+    public GitHubCommitNotifier(String resultOnFailure, String successUrlSuffix, String unstableUrlSuffix, String failureUrlSuffix) {
         this.resultOnFailure = resultOnFailure;
+        this.successUrlSuffix = successUrlSuffix;
+        this.unstableUrlSuffix = unstableUrlSuffix;
+        this.failureUrlSuffix = failureUrlSuffix;
     }
     
     @Deprecated
@@ -55,8 +61,24 @@ public class GitHubCommitNotifier extends Notifier {
         this(getDefaultResultOnFailure().toString());
     }
 
+    public GitHubCommitNotifier(String resultOnFailure) {
+        this(resultOnFailure, "", "", "");
+    }
+
     public @Nonnull String getResultOnFailure() {
         return resultOnFailure != null ? resultOnFailure : getDefaultResultOnFailure().toString();
+    }
+
+    public @Nonnull String getSuccessUrlSuffix() {
+        return successUrlSuffix != null ? successUrlSuffix : "";
+    }
+
+    public @Nonnull String getUnstableUrlSuffix() {
+        return unstableUrlSuffix != null ? unstableUrlSuffix : "";
+    }
+
+    public @Nonnull String getFailureUrlSuffix() {
+        return failureUrlSuffix != null ? failureUrlSuffix : "";
     }
      
     public static @Nonnull Result getDefaultResultOnFailure() {
@@ -109,22 +131,26 @@ public class GitHubCommitNotifier extends Notifier {
                 final String duration = Util.getTimeSpanString(System.currentTimeMillis() - build.getTimeInMillis());
 
                 Result result = build.getResult();
+                string urlSuffix = "";
                 if (result == null) { // Build is ongoing
                     state = GHCommitState.PENDING;
                     msg = Messages.CommitNotifier_Pending(build.getDisplayName());
                 } else if (result.isBetterOrEqualTo(SUCCESS)) {
                     state = GHCommitState.SUCCESS;
                     msg = Messages.CommitNotifier_Success(build.getDisplayName(), duration);
+                    urlSuffix = successUrlSuffix;
                 } else if (result.isBetterOrEqualTo(UNSTABLE)) {
                     state = GHCommitState.FAILURE;
                     msg = Messages.CommitNotifier_Unstable(build.getDisplayName(), duration);
+                    urlSuffix = unstableUrlSuffix;
                 } else {
                     state = GHCommitState.ERROR;
                     msg = Messages.CommitNotifier_Failed(build.getDisplayName(), duration);
+                    urlSuffix = failureUrlSuffix;
                 }
 
                 listener.getLogger().println(Messages.GitHubCommitNotifier_SettingCommitStatus(repository.getHtmlUrl() + "/commit/" + sha1));
-                repository.createCommitStatus(sha1, state, build.getAbsoluteUrl(), msg, build.getProject().getFullName());
+                repository.createCommitStatus(sha1, state, build.getAbsoluteUrl() + urlSuffix, msg, build.getProject().getFullName());
             }
         }
     }
