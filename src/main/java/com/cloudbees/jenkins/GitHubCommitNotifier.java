@@ -131,7 +131,7 @@ public class GitHubCommitNotifier extends Notifier {
                 final String duration = Util.getTimeSpanString(System.currentTimeMillis() - build.getTimeInMillis());
 
                 Result result = build.getResult();
-                string urlSuffix = "";
+                String urlSuffix = "";
                 if (result == null) { // Build is ongoing
                     state = GHCommitState.PENDING;
                     msg = Messages.CommitNotifier_Pending(build.getDisplayName());
